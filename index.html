@@ -48,9 +48,64 @@
         <div><div class="font-extrabold">RW 18</div><div class="text-xs text-white/70">Perum Wismajaya</div></div>
       </a>
       <nav class="hidden lg:flex items-center gap-7 text-sm">
-        <a href="#beranda" class="text-white/85 hover:text-white">Beranda</a>
-        <a href="#pengumuman" class="text-white/85 hover:text-white">Pengumuman</a>
-        <a href="#fasilitas" class="text-white/85 hover:text-white">Fasilitas</a>
+        <a href="#beranda" class="text-white/85 hover:text-white transition">Beranda</a>
+
+        <!-- PENGUMUMAN NAVBAR -->
+        <div class="relative">
+          <button id="announcementNavBtn" type="button"
+                  class="relative inline-flex items-center gap-2 text-white/90 hover:text-white transition">
+            <span class="text-lg leading-none">🔔</span>
+            <span>Pengumuman</span>
+            <span class="flex h-5 min-w-5 items-center justify-center rounded-full bg-red-500 px-1.5 text-[10px] font-extrabold text-white shadow-lg">3</span>
+          </button>
+
+          <div id="announcementDropdown"
+               class="absolute right-0 top-full mt-4 hidden w-80 rounded-2xl border border-white/10 bg-slate-950/95 p-3 text-white shadow-2xl backdrop-blur-xl">
+            <div class="flex items-center justify-between px-3 py-2">
+              <div>
+                <p class="text-sm font-extrabold">Pengumuman Terbaru</p>
+                <p class="text-[11px] text-white/50">Informasi penting warga RW 18</p>
+              </div>
+              <span class="rounded-full bg-green-500/15 px-2 py-1 text-[10px] font-bold text-green-300">LIVE</span>
+            </div>
+
+            <a href="#pengumuman" class="block rounded-xl px-3 py-3 hover:bg-white/10 transition">
+              <div class="flex gap-3">
+                <span class="mt-0.5">📢</span>
+                <div>
+                  <p class="text-sm font-semibold">Informasi warga RW 18</p>
+                  <p class="mt-0.5 text-xs text-white/50">Lihat seluruh pengumuman lingkungan.</p>
+                </div>
+              </div>
+            </a>
+
+            <a href="#keuangan" class="block rounded-xl px-3 py-3 hover:bg-white/10 transition">
+              <div class="flex gap-3">
+                <span class="mt-0.5">💰</span>
+                <div>
+                  <p class="text-sm font-semibold">Transparansi keuangan</p>
+                  <p class="mt-0.5 text-xs text-white/50">Lihat ringkasan pemasukan dan pengeluaran.</p>
+                </div>
+              </div>
+            </a>
+
+            <a href="#kegiatan" class="block rounded-xl px-3 py-3 hover:bg-white/10 transition">
+              <div class="flex gap-3">
+                <span class="mt-0.5">📅</span>
+                <div>
+                  <p class="text-sm font-semibold">Agenda kegiatan</p>
+                  <p class="mt-0.5 text-xs text-white/50">Cek kegiatan terbaru warga.</p>
+                </div>
+              </div>
+            </a>
+
+            <a href="#pengumuman" class="mt-1 block rounded-xl bg-green-700 px-3 py-2.5 text-center text-xs font-bold hover:bg-green-600 transition">
+              Lihat Semua Pengumuman
+            </a>
+          </div>
+        </div>
+
+        <a href="#fasilitas" class="text-white/85 hover:text-white transition">Fasilitas</a>
         <a href="#kegiatan" class="text-white/85 hover:text-white">Kegiatan</a>
         <a href="#keuangan" class="text-white/85 hover:text-white">Keuangan</a>
         <a href="#pengurus" class="text-white/85 hover:text-white">Pengurus</a>
@@ -61,7 +116,19 @@
     <div id="mobileMenu" class="lg:hidden max-h-0 opacity-0 overflow-hidden transition-all duration-300">
       <nav class="glass rounded-2xl p-3 mb-4">
         <a href="#beranda" class="mobile-link block px-4 py-3 rounded-xl text-white hover:bg-white/10">Beranda</a>
-        <a href="#pengumuman" class="mobile-link block px-4 py-3 rounded-xl text-white hover:bg-white/10">Pengumuman</a>
+        <button id="announcementMobileBtn" type="button"
+                class="w-full flex items-center justify-between px-4 py-3 rounded-xl text-white hover:bg-white/10 transition">
+          <span class="flex items-center gap-2">
+            <span>🔔</span>
+            <span>Pengumuman</span>
+          </span>
+          <span class="rounded-full bg-red-500 px-2 py-0.5 text-[10px] font-extrabold">3</span>
+        </button>
+        <div id="announcementMobilePanel" class="hidden px-2 pb-2">
+          <a href="#pengumuman" class="mobile-link block px-4 py-2.5 rounded-xl text-sm text-white/75 hover:bg-white/10 hover:text-white">📢 Pengumuman Terbaru</a>
+          <a href="#keuangan" class="mobile-link block px-4 py-2.5 rounded-xl text-sm text-white/75 hover:bg-white/10 hover:text-white">💰 Transparansi Keuangan</a>
+          <a href="#kegiatan" class="mobile-link block px-4 py-2.5 rounded-xl text-sm text-white/75 hover:bg-white/10 hover:text-white">📅 Agenda Kegiatan</a>
+        </div>
         <a href="#fasilitas" class="mobile-link block px-4 py-3 rounded-xl text-white hover:bg-white/10">Fasilitas</a>
         <a href="#kegiatan" class="mobile-link block px-4 py-3 rounded-xl text-white hover:bg-white/10">Kegiatan</a>
         <a href="#keuangan" class="mobile-link block px-4 py-3 rounded-xl text-white hover:bg-white/10">Keuangan</a>
@@ -93,10 +160,23 @@
 <!-- =========================================================
      PENGUMUMAN
      ========================================================= -->
-<section id="pengumuman" class="bg-slate-950 text-white overflow-hidden">
-  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-5 flex items-center gap-4">
-    <span class="pill bg-green-700 px-4 py-2 text-xs font-extrabold shrink-0">PENGUMUMAN</span>
-    <div id="announcementText" class="text-sm sm:text-base truncate">Selamat datang di Portal Informasi RW 18 Perum Wismajaya.</div>
+<section id="pengumuman" class="bg-slate-950 text-white overflow-hidden border-y border-white/5">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+    <div class="flex items-center gap-3">
+      <span class="inline-flex items-center gap-2 rounded-full bg-green-700/90 px-4 py-2 text-xs font-extrabold shrink-0 shadow-lg">
+        <span class="h-2 w-2 rounded-full bg-green-300 animate-pulse"></span>
+        PENGUMUMAN
+      </span>
+      <div class="min-w-0 flex-1 overflow-hidden">
+        <div class="flex items-center gap-3 whitespace-nowrap">
+          <span class="text-white/90">📢 Selamat datang di Portal Informasi RW 18 Perum Wismajaya.</span>
+          <span class="text-white/30">•</span>
+          <span class="text-white/65">💰 Transparansi keuangan tersedia pada menu Keuangan.</span>
+          <span class="text-white/30">•</span>
+          <span class="text-white/65">📅 Agenda kegiatan warga diperbarui secara berkala.</span>
+        </div>
+      </div>
+    </div>
   </div>
 </section>
 
@@ -437,6 +517,33 @@
   }
 
   // =======================================================
+  // PENGUMUMAN NAVBAR
+  // =======================================================
+  const announcementNavBtn = document.getElementById('announcementNavBtn');
+  const announcementDropdown = document.getElementById('announcementDropdown');
+  const announcementMobileBtn = document.getElementById('announcementMobileBtn');
+  const announcementMobilePanel = document.getElementById('announcementMobilePanel');
+
+  if (announcementNavBtn && announcementDropdown) {
+    announcementNavBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      announcementDropdown.classList.toggle('hidden');
+    });
+
+    announcementDropdown.addEventListener('click', (e) => e.stopPropagation());
+  }
+
+  document.addEventListener('click', () => {
+    announcementDropdown?.classList.add('hidden');
+  });
+
+  if (announcementMobileBtn && announcementMobilePanel) {
+    announcementMobileBtn.addEventListener('click', () => {
+      announcementMobilePanel.classList.toggle('hidden');
+    });
+  }
+
+  // =======================================================
   // 3) NAVBAR + MOBILE MENU + REVEAL + YEAR
   // =======================================================
   const navbar=document.getElementById('navbar');
@@ -444,7 +551,7 @@
   const mobileMenu=document.getElementById('mobileMenu');
   let open=false;
   menuButton.addEventListener('click',()=>{open=!open;mobileMenu.style.maxHeight=open?mobileMenu.scrollHeight+'px':'0';mobileMenu.style.opacity=open?'1':'0';});
-  document.querySelectorAll('.mobile-link').forEach(x=>x.addEventListener('click',()=>{open=false;mobileMenu.style.maxHeight='0';mobileMenu.style.opacity='0';}));
+  document.querySelectorAll('.mobile-link').forEach(x=>x.addEventListener('click',()=>{open=false;mobileMenu.style.maxHeight='0';mobileMenu.style.opacity='0';announcementMobilePanel?.classList.add('hidden');}));
   window.addEventListener('scroll',()=>{if(scrollY>40) navbar.classList.add('bg-slate-950/90','backdrop-blur-xl','shadow-xl'); else navbar.classList.remove('bg-slate-950/90','backdrop-blur-xl','shadow-xl');});
   const ro=new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting){e.target.classList.add('show');ro.unobserve(e.target)}}),{threshold:.12});
   document.querySelectorAll('.reveal').forEach(e=>ro.observe(e));
