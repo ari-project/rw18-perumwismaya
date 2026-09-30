@@ -37,6 +37,14 @@
     .featured{background:linear-gradient(135deg,#052e16,#0f766e 58%,#0f172a)}
     .announcement-card{transition:.3s ease}
     .announcement-card:hover{transform:translateY(-7px);box-shadow:0 25px 55px rgba(15,23,42,.12)}
+    .marquee-wrap{min-width:0;overflow:hidden;position:relative}
+    .marquee-track{display:flex;width:max-content;align-items:center;animation:announcementScroll 34s linear infinite}
+    .marquee-wrap:hover .marquee-track{animation-play-state:paused}
+    .marquee-group{display:flex;align-items:center;white-space:nowrap}
+    .marquee-item{display:inline-flex;align-items:center;gap:.55rem;margin-right:3.5rem;font-size:.9rem;color:rgba(255,255,255,.88)}
+    .marquee-item .dot{opacity:.35}
+    @keyframes announcementScroll{from{transform:translateX(0)}to{transform:translateX(-50%)}}
+    @media (prefers-reduced-motion: reduce){.marquee-track{animation:none;transform:none}.reveal{transition:none!important}}
   </style>
 </head>
 <body>
@@ -164,23 +172,39 @@
      ========================================================= -->
 <section id="pengumuman" class="bg-slate-50 border-y border-slate-200">
 
-  <!-- Banner informasi -->
+  <!-- Banner informasi warga: teks berjalan -->
   <div class="bg-slate-950 text-white overflow-hidden">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
       <div class="flex items-center gap-3">
-        <span class="inline-flex items-center gap-2 rounded-full bg-green-700 px-4 py-2 text-xs font-extrabold shrink-0 shadow-lg">
+        <span class="inline-flex items-center gap-2 rounded-full bg-green-700 px-4 py-2 text-xs font-extrabold shrink-0 shadow-lg relative z-10">
           <span class="h-2 w-2 rounded-full bg-green-300 animate-pulse"></span>
           INFORMASI WARGA
         </span>
-        <div class="min-w-0 flex-1 overflow-hidden">
-          <div class="flex items-center gap-8 whitespace-nowrap text-sm">
-            <span>📢 Portal informasi resmi warga RW 18 Perum Wismajaya</span>
-            <span class="text-white/30">•</span>
-            <span class="text-white/70">🌿 Jaga kebersihan dan kenyamanan lingkungan bersama</span>
-            <span class="text-white/30">•</span>
-            <span class="text-white/70">💰 Transparansi keuangan tersedia pada menu Keuangan</span>
-            <span class="text-white/30">•</span>
-            <span class="text-white/70">🤝 Utamakan kerukunan dan gotong royong warga</span>
+
+        <div class="marquee-wrap flex-1" aria-label="Informasi warga berjalan">
+          <div class="marquee-track">
+
+            <div class="marquee-group">
+              <span class="marquee-item">📢 Portal informasi resmi warga RW 18 Perum Wismajaya <span class="dot">•</span></span>
+              <span class="marquee-item">🌿 Jaga kebersihan dan kenyamanan lingkungan bersama <span class="dot">•</span></span>
+              <span class="marquee-item">🧹 Kerja bakti dan kegiatan lingkungan mengikuti pengumuman pengurus <span class="dot">•</span></span>
+              <span class="marquee-item">🛡️ Mari menjaga keamanan dan ketertiban lingkungan <span class="dot">•</span></span>
+              <span class="marquee-item">💰 Transparansi keuangan tersedia pada menu Keuangan <span class="dot">•</span></span>
+              <span class="marquee-item">🤝 Utamakan kerukunan, kepedulian, dan gotong royong warga <span class="dot">•</span></span>
+              <span class="marquee-item">📝 Pelayanan administrasi dapat dikoordinasikan melalui Ketua RT masing-masing <span class="dot">•</span></span>
+            </div>
+
+            <!-- Duplikasi untuk loop tanpa putus -->
+            <div class="marquee-group" aria-hidden="true">
+              <span class="marquee-item">📢 Portal informasi resmi warga RW 18 Perum Wismajaya <span class="dot">•</span></span>
+              <span class="marquee-item">🌿 Jaga kebersihan dan kenyamanan lingkungan bersama <span class="dot">•</span></span>
+              <span class="marquee-item">🧹 Kerja bakti dan kegiatan lingkungan mengikuti pengumuman pengurus <span class="dot">•</span></span>
+              <span class="marquee-item">🛡️ Mari menjaga keamanan dan ketertiban lingkungan <span class="dot">•</span></span>
+              <span class="marquee-item">💰 Transparansi keuangan tersedia pada menu Keuangan <span class="dot">•</span></span>
+              <span class="marquee-item">🤝 Utamakan kerukunan, kepedulian, dan gotong royong warga <span class="dot">•</span></span>
+              <span class="marquee-item">📝 Pelayanan administrasi dapat dikoordinasikan melalui Ketua RT masing-masing <span class="dot">•</span></span>
+            </div>
+
           </div>
         </div>
       </div>
