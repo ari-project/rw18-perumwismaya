@@ -37,6 +37,11 @@
     .featured{background:linear-gradient(135deg,#052e16,#0f766e 58%,#0f172a)}
     .announcement-card{transition:.3s ease}
     .announcement-card:hover{transform:translateY(-7px);box-shadow:0 25px 55px rgba(15,23,42,.12)}
+    .csv-drop{transition:.25s ease;border:2px dashed #cbd5e1}
+    .csv-drop:hover,.csv-drop.dragover{border-color:#16a34a;background:#f0fdf4}
+    .csv-preview-row.invalid{background:#fef2f2}
+    .csv-preview-row.duplicate{background:#fffbeb}
+    .csv-stat{border:1px solid #e2e8f0;border-radius:16px;padding:14px;background:#fff}
     .marquee-wrap{min-width:0;overflow:hidden;position:relative}
     .marquee-track{display:flex;width:max-content;align-items:center;animation:announcementScroll 34s linear infinite}
     .marquee-wrap:hover .marquee-track{animation-play-state:paused}
@@ -449,6 +454,54 @@
         </div>
       </div>
 
+      <!-- IMPORT CSV KEUANGAN -->
+      <div class="mt-6 bg-white rounded-2xl border p-6">
+        <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-5">
+          <div>
+            <h4 class="font-extrabold">Import Keuangan dari CSV</h4>
+            <p class="text-sm text-slate-500 mt-1">
+              Upload file CSV untuk memasukkan banyak transaksi sekaligus ke Firebase.
+            </p>
+          </div>
+
+          <div class="flex flex-wrap gap-2">
+            <button id="downloadCsvTemplate"
+                    type="button"
+                    class="px-4 py-2.5 rounded-xl border border-slate-200
+                           bg-white text-slate-700 text-sm font-bold
+                           hover:bg-slate-50 transition">
+              ⬇️ Template CSV
+            </button>
+
+            <label for="csvFileInput"
+                   class="cursor-pointer inline-flex items-center gap-2
+                          px-4 py-2.5 rounded-xl bg-emerald-700
+                          text-white text-sm font-bold
+                          hover:bg-emerald-800 transition">
+              📤 Pilih File CSV
+            </label>
+
+            <input id="csvFileInput"
+                   type="file"
+                   accept=".csv,text/csv"
+                   class="hidden">
+          </div>
+        </div>
+
+        <div id="csvDropZone"
+             class="csv-drop mt-5 rounded-2xl p-7 text-center cursor-pointer">
+          <div class="text-4xl">📄</div>
+          <p class="mt-3 font-bold text-slate-800">Tarik & letakkan file CSV di sini</p>
+          <p class="mt-1 text-sm text-slate-500">atau klik area ini untuk memilih file</p>
+          <p class="mt-3 text-xs text-slate-400">
+            Kolom: Tanggal, Jenis, Kategori, Keterangan, Nominal
+          </p>
+        </div>
+
+        <div id="csvImportStatus"
+             class="hidden mt-4 rounded-xl px-4 py-3 text-sm"></div>
+      </div>
+
       <div class="mt-6 bg-white rounded-2xl border overflow-hidden">
         <div class="p-5 border-b flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3"><div><h4 class="font-extrabold">Kelola Transaksi</h4><p class="text-sm text-slate-500">Hapus transaksi hanya jika diperlukan.</p></div><span id="adminUser" class="text-xs text-slate-500"></span></div>
         <div class="overflow-x-auto"><table class="w-full min-w-[820px]"><thead class="bg-slate-50"><tr class="text-left text-xs uppercase tracking-wider text-slate-500"><th class="px-5 py-4">Tanggal</th><th class="px-5 py-4">Jenis</th><th class="px-5 py-4">Kategori</th><th class="px-5 py-4">Keterangan</th><th class="px-5 py-4 text-right">Nominal</th><th class="px-5 py-4 text-center">Aksi</th></tr></thead><tbody id="adminFinanceTable"></tbody></table></div>
@@ -459,13 +512,131 @@
 </div>
 
 <!-- =========================================================
+     MODAL PREVIEW IMPORT CSV
+     ========================================================= -->
+<div id="csvPreviewModal"
+     class="modal fixed inset-0 z-[120] items-center justify-center
+            p-4 bg-black/60 backdrop-blur-sm overflow-y-auto">
+
+  <div class="bg-slate-50 rounded-3xl max-w-6xl w-full my-8
+              shadow-2xl overflow-hidden">
+
+    <div class="bg-slate-950 text-white px-6 py-5
+                flex items-center justify-between gap-4">
+
+      <div>
+        <div class="text-green-400 text-xs uppercase font-bold">
+          Import CSV
+        </div>
+        <h3 class="text-xl sm:text-2xl font-extrabold">
+          Preview Data Keuangan
+        </h3>
+      </div>
+
+      <button id="closeCsvPreview"
+              class="w-10 h-10 rounded-xl bg-white/10 hover:bg-white/20">
+        ✕
+      </button>
+
+    </div>
+
+    <div class="p-6 sm:p-8">
+
+      <div class="grid sm:grid-cols-4 gap-3 mb-6">
+
+        <div class="csv-stat">
+          <div class="text-xs text-slate-500">Total Baris</div>
+          <div id="csvTotalRows" class="text-xl font-extrabold mt-1">0</div>
+        </div>
+
+        <div class="csv-stat">
+          <div class="text-xs text-slate-500">Siap Import</div>
+          <div id="csvReadyRows" class="text-xl font-extrabold mt-1 text-emerald-700">0</div>
+        </div>
+
+        <div class="csv-stat">
+          <div class="text-xs text-slate-500">Duplikat</div>
+          <div id="csvDuplicateRows" class="text-xl font-extrabold mt-1 text-amber-600">0</div>
+        </div>
+
+        <div class="csv-stat">
+          <div class="text-xs text-slate-500">Error</div>
+          <div id="csvInvalidRows" class="text-xl font-extrabold mt-1 text-red-600">0</div>
+        </div>
+
+      </div>
+
+      <div class="rounded-2xl border border-slate-200 bg-white overflow-hidden">
+        <div class="overflow-x-auto max-h-[50vh]">
+          <table class="w-full min-w-[900px]">
+
+            <thead class="sticky top-0 bg-slate-100 z-10">
+              <tr class="text-left text-xs uppercase tracking-wider text-slate-500">
+                <th class="px-4 py-3">#</th>
+                <th class="px-4 py-3">Tanggal</th>
+                <th class="px-4 py-3">Jenis</th>
+                <th class="px-4 py-3">Kategori</th>
+                <th class="px-4 py-3">Keterangan</th>
+                <th class="px-4 py-3 text-right">Nominal</th>
+                <th class="px-4 py-3">Status</th>
+              </tr>
+            </thead>
+
+            <tbody id="csvPreviewTable"></tbody>
+
+          </table>
+        </div>
+      </div>
+
+      <div class="mt-5 flex flex-col sm:flex-row
+                  sm:items-center sm:justify-between gap-4">
+
+        <p id="csvPreviewNote"
+           class="text-sm text-slate-500">
+          Periksa data sebelum melakukan import.
+        </p>
+
+        <div class="flex gap-2 justify-end">
+
+          <button id="cancelCsvImport"
+                  type="button"
+                  class="px-5 py-3 rounded-xl
+                         border border-slate-200 bg-white
+                         text-slate-700 font-bold
+                         hover:bg-slate-50">
+            Batal
+          </button>
+
+          <button id="confirmCsvImport"
+                  type="button"
+                  disabled
+                  class="px-5 py-3 rounded-xl
+                         bg-green-700 text-white
+                         font-bold
+                         disabled:opacity-40
+                         disabled:cursor-not-allowed
+                         hover:bg-green-800">
+            Import ke Firebase
+          </button>
+
+        </div>
+
+      </div>
+
+    </div>
+
+  </div>
+</div>
+
+
+<!-- =========================================================
      FIREBASE + APP LOGIC
      KONFIGURASI FIREBASE RW 18
      ========================================================= -->
 <script type="module">
   import { initializeApp } from 'https://www.gstatic.com/firebasejs/12.2.1/firebase-app.js';
   import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut } from 'https://www.gstatic.com/firebasejs/12.2.1/firebase-auth.js';
-  import { getFirestore, collection, addDoc, deleteDoc, doc, getDoc, setDoc, query, orderBy, onSnapshot, serverTimestamp } from 'https://www.gstatic.com/firebasejs/12.2.1/firebase-firestore.js';
+  import { getFirestore, collection, addDoc, deleteDoc, doc, getDoc, setDoc, query, orderBy, onSnapshot, serverTimestamp, writeBatch } from 'https://www.gstatic.com/firebasejs/12.2.1/firebase-firestore.js';
   const firebaseConfig = {
     apiKey: 'AIzaSyBMg58Y3ZLYbx1dcGjQjeFuDLQtqVttuGs',
     authDomain: 'rw18-perum-wismajaya.firebaseapp.com',
@@ -474,6 +645,426 @@
     messagingSenderId: '217007403952',
     appId: '1:217007403952:web:3cd10a0805a8c457a29c75'
   };
+
+  // =======================================================
+  // IMPORT CSV KEUANGAN
+  // =======================================================
+  const csvFileInput = document.getElementById('csvFileInput');
+  const csvDropZone = document.getElementById('csvDropZone');
+  const csvPreviewModal = document.getElementById('csvPreviewModal');
+  const csvPreviewTable = document.getElementById('csvPreviewTable');
+  const csvImportStatus = document.getElementById('csvImportStatus');
+  const csvConfirmBtn = document.getElementById('confirmCsvImport');
+  const csvTotalRows = document.getElementById('csvTotalRows');
+  const csvReadyRows = document.getElementById('csvReadyRows');
+  const csvDuplicateRows = document.getElementById('csvDuplicateRows');
+  const csvInvalidRows = document.getElementById('csvInvalidRows');
+  const csvPreviewNote = document.getElementById('csvPreviewNote');
+
+  let pendingCsvRows = [];
+
+  function setCsvStatus(message, type='info') {
+    if (!csvImportStatus) return;
+    csvImportStatus.textContent = message;
+    csvImportStatus.className =
+      `mt-4 rounded-xl px-4 py-3 text-sm ${
+        type === 'error'
+          ? 'bg-red-50 text-red-700 border border-red-100'
+          : type === 'success'
+            ? 'bg-emerald-50 text-emerald-700 border border-emerald-100'
+            : 'bg-blue-50 text-blue-700 border border-blue-100'
+      }`;
+    csvImportStatus.classList.remove('hidden');
+  }
+
+  function closeCsvPreview() {
+    csvPreviewModal?.classList.remove('show');
+    pendingCsvRows = [];
+    if (csvConfirmBtn) csvConfirmBtn.disabled = true;
+  }
+
+  function normalizeHeader(value='') {
+    return value
+      .replace(/^\uFEFF/, '')
+      .trim()
+      .toLowerCase()
+      .replace(/\s+/g, '');
+  }
+
+  function detectCsvDelimiter(line='') {
+    const candidates = [',', ';', '\t'];
+    let best = ',';
+    let bestCount = -1;
+
+    for (const delimiter of candidates) {
+      let count = 0;
+      let quoted = false;
+
+      for (let i=0; i<line.length; i++) {
+        if (line[i] === '"') {
+          if (quoted && line[i+1] === '"') {
+            i++;
+            continue;
+          }
+          quoted = !quoted;
+        } else if (line[i] === delimiter && !quoted) {
+          count++;
+        }
+      }
+
+      if (count > bestCount) {
+        bestCount = count;
+        best = delimiter;
+      }
+    }
+
+    return best;
+  }
+
+  function parseCsv(text) {
+    text = String(text || '').replace(/^\uFEFF/, '');
+
+    const firstLine = text.split(/\r?\n/).find(line => line.trim() !== '') || '';
+    const delimiter = detectCsvDelimiter(firstLine);
+
+    const rows = [];
+    let row = [];
+    let cell = '';
+    let quoted = false;
+
+    for (let i=0; i<text.length; i++) {
+      const char = text[i];
+      const next = text[i+1];
+
+      if (char === '"') {
+        if (quoted && next === '"') {
+          cell += '"';
+          i++;
+        } else {
+          quoted = !quoted;
+        }
+      } else if (char === delimiter && !quoted) {
+        row.push(cell);
+        cell = '';
+      } else if ((char === '\n' || char === '\r') && !quoted) {
+        if (char === '\r' && next === '\n') i++;
+        row.push(cell);
+        cell = '';
+
+        if (row.some(value => String(value).trim() !== '')) {
+          rows.push(row);
+        }
+
+        row = [];
+      } else {
+        cell += char;
+      }
+    }
+
+    if (cell.length || row.length) {
+      row.push(cell);
+      if (row.some(value => String(value).trim() !== '')) {
+        rows.push(row);
+      }
+    }
+
+    return rows;
+  }
+
+  function parseCsvAmount(value='') {
+    const cleaned = String(value)
+      .trim()
+      .replace(/\s/g, '')
+      .replace(/Rp/gi, '')
+      .replace(/[^\d-]/g, '');
+
+    if (!cleaned || cleaned === '-') return NaN;
+    return Number(cleaned);
+  }
+
+  function parseCsvDate(value='') {
+    const raw = String(value).trim();
+
+    if (!raw) return '';
+
+    // YYYY-MM-DD
+    if (/^\d{4}-\d{2}-\d{2}$/.test(raw)) {
+      return raw;
+    }
+
+    // DD/MM/YYYY or DD-MM-YYYY
+    const dmy = raw.match(/^(\d{1,2})[\/-](\d{1,2})[\/-](\d{4})$/);
+    if (dmy) {
+      const [, d, m, y] = dmy;
+      const dd = String(d).padStart(2, '0');
+      const mm = String(m).padStart(2, '0');
+      return `${y}-${mm}-${dd}`;
+    }
+
+    return '';
+  }
+
+  function normalizeCsvType(value='') {
+    const raw = String(value).trim().toLowerCase();
+
+    if (['pemasukan', 'masuk', 'income', 'in'].includes(raw)) {
+      return 'income';
+    }
+
+    if (['pengeluaran', 'keluar', 'expense', 'out'].includes(raw)) {
+      return 'expense';
+    }
+
+    return '';
+  }
+
+  function transactionSignature(item) {
+    return [
+      item.date || '',
+      item.type || '',
+      String(item.category || '').trim().toLowerCase(),
+      String(item.description || '').trim().toLowerCase(),
+      Number(item.amount) || 0
+    ].join('|');
+  }
+
+  function sameTransaction(a, b) {
+    return transactionSignature(a) === transactionSignature(b);
+  }
+
+  function buildCsvRows(text) {
+    const rawRows = parseCsv(text);
+
+    if (rawRows.length < 2) {
+      throw new Error('CSV tidak memiliki data transaksi.');
+    }
+
+    const headers = rawRows.shift().map(normalizeHeader);
+
+    const headerAliases = {
+      date: ['tanggal', 'date'],
+      type: ['jenis', 'type'],
+      category: ['kategori', 'category'],
+      description: ['keterangan', 'deskripsi', 'description'],
+      amount: ['nominal', 'jumlah', 'amount', 'nilai']
+    };
+
+    const indexes = {};
+
+    for (const [key, aliases] of Object.entries(headerAliases)) {
+      indexes[key] = headers.findIndex(header => aliases.includes(header));
+    }
+
+    const missing = Object.entries(indexes)
+      .filter(([, index]) => index === -1)
+      .map(([key]) => key);
+
+    if (missing.length) {
+      throw new Error(
+        `Kolom CSV belum lengkap: ${missing.join(', ')}.`
+      );
+    }
+
+    const seen = new Set();
+    const parsed = [];
+
+    rawRows.forEach((cells, index) => {
+      const sourceRow = index + 2;
+
+      const item = {
+        rowNumber: sourceRow,
+        date: parseCsvDate(cells[indexes.date] || ''),
+        type: normalizeCsvType(cells[indexes.type] || ''),
+        category: String(cells[indexes.category] || '').trim(),
+        description: String(cells[indexes.description] || '').trim(),
+        amount: parseCsvAmount(cells[indexes.amount] || ''),
+        status: 'ready',
+        statusText: 'Siap diimpor'
+      };
+
+      const errors = [];
+
+      if (!item.date) errors.push('Tanggal tidak valid');
+      if (!item.type) errors.push('Jenis tidak valid');
+      if (!item.category) errors.push('Kategori kosong');
+      if (!item.description) errors.push('Keterangan kosong');
+      if (!Number.isFinite(item.amount) || item.amount <= 0) {
+        errors.push('Nominal tidak valid');
+      }
+
+      const signature = transactionSignature(item);
+
+      if (!errors.length && seen.has(signature)) {
+        item.status = 'duplicate';
+        item.statusText = 'Duplikat di file CSV';
+      } else if (errors.length) {
+        item.status = 'invalid';
+        item.statusText = errors.join('; ');
+      } else if (allTransactions.some(existing => sameTransaction(existing, item))) {
+        item.status = 'duplicate';
+        item.statusText = 'Sudah ada di database';
+      }
+
+      if (!errors.length) {
+        seen.add(signature);
+      }
+
+      parsed.push(item);
+    });
+
+    return parsed;
+  }
+
+  function renderCsvPreview(rows) {
+    pendingCsvRows = rows;
+
+    const total = rows.length;
+    const ready = rows.filter(row => row.status === 'ready').length;
+    const duplicate = rows.filter(row => row.status === 'duplicate').length;
+    const invalid = rows.filter(row => row.status === 'invalid').length;
+
+    csvTotalRows.textContent = total;
+    csvReadyRows.textContent = ready;
+    csvDuplicateRows.textContent = duplicate;
+    csvInvalidRows.textContent = invalid;
+
+    csvPreviewTable.innerHTML = '';
+
+    rows.forEach(row => {
+      const badge =
+        row.status === 'ready'
+          ? '<span class="pill px-2.5 py-1 bg-emerald-100 text-emerald-700 text-xs font-bold">Siap</span>'
+          : row.status === 'duplicate'
+            ? '<span class="pill px-2.5 py-1 bg-amber-100 text-amber-700 text-xs font-bold">Duplikat</span>'
+            : '<span class="pill px-2.5 py-1 bg-red-100 text-red-700 text-xs font-bold">Error</span>';
+
+      const tr = document.createElement('tr');
+      tr.className =
+        `csv-preview-row border-b border-slate-100 ${
+          row.status === 'duplicate'
+            ? 'duplicate'
+            : row.status === 'invalid'
+              ? 'invalid'
+              : ''
+        }`;
+
+      tr.innerHTML = `
+        <td class="px-4 py-4 text-sm">${row.rowNumber}</td>
+        <td class="px-4 py-4 text-sm">${esc(row.date || '-')}</td>
+        <td class="px-4 py-4 text-sm">${row.type === 'income' ? 'Pemasukan' : row.type === 'expense' ? 'Pengeluaran' : '-'}</td>
+        <td class="px-4 py-4 text-sm font-medium">${esc(row.category || '-')}</td>
+        <td class="px-4 py-4 text-sm text-slate-600">${esc(row.description || '-')}</td>
+        <td class="px-4 py-4 text-sm text-right font-bold">${Number.isFinite(row.amount) ? money(row.amount) : '-'}</td>
+        <td class="px-4 py-4 text-xs">${badge}<div class="mt-1 text-slate-500">${esc(row.statusText)}</div></td>
+      `;
+
+      csvPreviewTable.appendChild(tr);
+    });
+
+    csvConfirmBtn.disabled = ready === 0;
+
+    csvPreviewNote.textContent =
+      ready > 0
+        ? `${ready} transaksi siap diimpor. ${duplicate} duplikat dan ${invalid} baris error tidak akan diimpor.`
+        : 'Tidak ada transaksi yang siap diimpor. Periksa format CSV.';
+
+    csvPreviewModal.classList.add('show');
+  }
+
+  async function handleCsvFile(file) {
+    if (!file) return;
+
+    if (!file.name.toLowerCase().endsWith('.csv')) {
+      setCsvStatus('File harus berekstensi .csv.', 'error');
+      return;
+    }
+
+    try {
+      setCsvStatus(`Membaca ${file.name}...`);
+      const text = await file.text();
+      const rows = buildCsvRows(text);
+
+      renderCsvPreview(rows);
+
+      setCsvStatus(
+        `Preview ${rows.length} baris berhasil dibuat.`,
+        'success'
+      );
+    } catch (error) {
+      console.error(error);
+      setCsvStatus(
+        error.message || 'File CSV tidak dapat dibaca.',
+        'error'
+      );
+    } finally {
+      if (csvFileInput) csvFileInput.value = '';
+    }
+  }
+
+  if (csvFileInput) {
+    csvFileInput.addEventListener('change', event => {
+      handleCsvFile(event.target.files?.[0]);
+    });
+  }
+
+  if (csvDropZone) {
+    csvDropZone.addEventListener('click', () => {
+      csvFileInput?.click();
+    });
+
+    ['dragenter', 'dragover'].forEach(eventName => {
+      csvDropZone.addEventListener(eventName, event => {
+        event.preventDefault();
+        csvDropZone.classList.add('dragover');
+      });
+    });
+
+    ['dragleave', 'drop'].forEach(eventName => {
+      csvDropZone.addEventListener(eventName, event => {
+        event.preventDefault();
+        csvDropZone.classList.remove('dragover');
+      });
+    });
+
+    csvDropZone.addEventListener('drop', event => {
+      handleCsvFile(event.dataTransfer.files?.[0]);
+    });
+  }
+
+  document.getElementById('closeCsvPreview')?.addEventListener('click', closeCsvPreview);
+  document.getElementById('cancelCsvImport')?.addEventListener('click', closeCsvPreview);
+
+  csvPreviewModal?.addEventListener('click', event => {
+    if (event.target === csvPreviewModal) closeCsvPreview();
+  });
+
+  document.getElementById('downloadCsvTemplate')?.addEventListener('click', () => {
+    const csv = [
+      ['Tanggal', 'Jenis', 'Kategori', 'Keterangan', 'Nominal'],
+      ['2026-09-01', 'Pemasukan', 'Iuran Warga', 'Iuran warga September', '500000'],
+      ['2026-09-02', 'Pengeluaran', 'Keamanan', 'Pembelian perlengkapan keamanan', '150000'],
+      ['2026-09-03', 'Pemasukan', 'Sumbangan', 'Sumbangan warga', '250000']
+    ]
+      .map(row => row.map(value => `"${String(value).replaceAll('"','""')}"`).join(','))
+      .join('\n');
+
+    const blob = new Blob(
+      ['\uFEFF' + csv],
+      { type: 'text/csv;charset=utf-8;' }
+    );
+
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+
+    link.href = url;
+    link.download = 'template-keuangan-rw18.csv';
+
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+
+    URL.revokeObjectURL(url);
+  });
 
   const financeStatus = document.getElementById('financeStatus');
   const loginModal = document.getElementById('loginModal');
@@ -825,6 +1416,92 @@ Kontak administrasi: [ISI NOMOR].`
           await setDoc(doc(db,'settings','finance'),{openingBalance:amount,updatedAt:serverTimestamp(),updatedBy:auth.currentUser?.email||auth.currentUser?.uid},{merge:true});
           openingBalance=amount; renderFinance(); setStatus('Saldo awal berhasil diperbarui.');
         }catch(err){setStatus(err.message||'Gagal memperbarui saldo awal.','error');}
+      });
+
+      // =======================================================
+      // KONFIRMASI IMPORT CSV KE FIRESTORE
+      // =======================================================
+      csvConfirmBtn?.addEventListener('click', async () => {
+        const user = auth.currentUser;
+
+        if (!user) {
+          setCsvStatus('Silakan login sebagai Admin/Bendahara terlebih dahulu.', 'error');
+          closeCsvPreview();
+          showModal(loginModal);
+          return;
+        }
+
+        const readyRows = pendingCsvRows.filter(row => row.status === 'ready');
+
+        if (!readyRows.length) {
+          setCsvStatus('Tidak ada data valid untuk diimpor.', 'error');
+          return;
+        }
+
+        const confirmed = confirm(
+          `Import ${readyRows.length} transaksi ke Firebase?\\n\\n` +
+          `Duplikat dan baris error akan dilewati.`
+        );
+
+        if (!confirmed) return;
+
+        csvConfirmBtn.disabled = true;
+        csvConfirmBtn.textContent = 'Mengimpor...';
+
+        try {
+          // Firestore writeBatch maksimum 500 operasi per batch.
+          const chunks = [];
+          for (let i = 0; i < readyRows.length; i += 450) {
+            chunks.push(readyRows.slice(i, i + 450));
+          }
+
+          let importedCount = 0;
+
+          for (const chunk of chunks) {
+            const batch = writeBatch(db);
+
+            chunk.forEach(item => {
+              const ref = doc(collection(db, 'transactions'));
+
+              batch.set(ref, {
+                date: item.date,
+                type: item.type,
+                category: item.category,
+                description: item.description,
+                amount: item.amount,
+                createdBy: user.email || user.uid,
+                createdAt: serverTimestamp(),
+                importedFromCsv: true
+              });
+            });
+
+            await batch.commit();
+            importedCount += chunk.length;
+          }
+
+          closeCsvPreview();
+          setStatus(
+            `${importedCount} transaksi berhasil diimpor ke Firebase.`,
+            'success'
+          );
+
+          setCsvStatus(
+            `${importedCount} transaksi berhasil diimpor.`,
+            'success'
+          );
+        } catch (error) {
+          console.error(error);
+
+          csvConfirmBtn.disabled = false;
+          csvConfirmBtn.textContent = 'Import ke Firebase';
+
+          setStatus(
+            error.message || 'Import CSV gagal.',
+            'error'
+          );
+        } finally {
+          csvConfirmBtn.textContent = 'Import ke Firebase';
+        }
       });
 
       adminTable.addEventListener('click',async e=>{
