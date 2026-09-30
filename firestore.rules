@@ -1,0 +1,24 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Pengaturan keuangan: semua orang boleh membaca,
+    // hanya user yang login yang boleh menulis.
+    match /settings/finance {
+      allow read: if true;
+      allow write: if isSignedIn();
+    }
+
+    // Transaksi keuangan: publik boleh membaca,
+    // hanya user yang login yang boleh tambah/hapus.
+    match /transactions/{transactionId} {
+      allow read: if true;
+      allow create, delete: if isSignedIn();
+      allow update: if false;
+    }
+
+    function isSignedIn() {
+      return request.auth != null;
+    }
+  }
+}

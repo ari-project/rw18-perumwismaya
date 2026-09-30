@@ -1,28 +1,52 @@
-SETUP PORTAL RW 18 + FIREBASE
+RW 18 PERUM WISMAJAYA - SETUP DATABASE ONLINE
 
-1. Upload seluruh file website ke hosting.
-   - index.html
-   - firebase-config.js
-   - firestore.rules (untuk konfigurasi Firestore, bukan file yang diupload ke web)
+1. Buat project Firebase
+   - Buka Firebase Console: https://console.firebase.google.com/
+   - Create project baru.
+   - Tambahkan Web App.
 
-2. Konfigurasi Firebase Web App yang sudah dimasukkan:
-   Project ID: rw18-perum-wismajaya
-   Auth Domain: rw18-perum-wismajaya.firebaseapp.com
+2. Aktifkan Authentication
+   - Authentication -> Sign-in method
+   - Aktifkan Email/Password.
+   - Buat user admin/bendahara dari Firebase Console.
 
-3. Di Firebase Console:
-   Authentication -> Sign-in method -> aktifkan Email/Password.
+3. Aktifkan Firestore Database
+   - Firestore Database -> Create database.
+   - Pilih mode production.
 
-4. Buat akun admin/bendahara:
-   Authentication -> Users -> Add user.
-   Contoh:
-   email: bendahara@rw18.local
-   password: buat password sendiri yang kuat.
+4. Masukkan Firestore Rules
+   - Buka Firestore Database -> Rules.
+   - Salin isi file firestore.rules ke editor Rules.
+   - Publish.
 
-5. Firestore Database:
-   Buat database Firestore, kemudian pasang rules dari file firestore.rules.
+5. Pasang Firebase Config
+   - Dari Project settings -> Your apps -> SDK setup/configuration.
+   - Salin konfigurasi firebaseConfig.
+   - Buka index.html.
+   - Cari blok:
+       const firebaseConfig = { ... };
+   - Ganti nilai GANTI_API_KEY, GANTI_PROJECT, dll dengan nilai asli.
 
-6. Jalankan website melalui HTTP/HTTPS hosting.
-   Jangan membuka index.html langsung dengan file:// karena module JavaScript Firebase bisa diblokir browser.
+6. Jalankan website
+   - Untuk tes cepat, gunakan hosting lokal/static server.
+   - Jangan membuka file HTML via file:/// apabila browser memblokir modul atau Firebase.
 
-CATATAN KEAMANAN:
-Konfigurasi Firebase Web termasuk apiKey memang digunakan oleh aplikasi web. Keamanan utama tetap berasal dari Authentication dan Firestore Security Rules. Jangan menaruh password admin/bendahara di dalam HTML atau JavaScript.
+7. Struktur koleksi yang digunakan
+   settings/finance
+     openingBalance: number
+     updatedAt: timestamp
+     updatedBy: string
+
+   transactions/{autoId}
+     date: YYYY-MM-DD
+     type: income | expense
+     category: string
+     description: string
+     amount: number
+     createdBy: string
+     createdAt: timestamp
+
+CATATAN KEAMANAN
+- Data transaksi dapat dibaca publik karena portal memang menampilkan transparansi keuangan.
+- Hanya akun Firebase yang sudah login yang dapat menambah/menghapus transaksi berdasarkan Rules di atas.
+- Untuk produksi yang lebih ketat, sebaiknya Rules membatasi penulisan berdasarkan custom claims role=admin/bendahara, bukan sekadar user login.
